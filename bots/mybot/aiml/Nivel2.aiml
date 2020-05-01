@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+
+	<!-- cita hoy/mañana/pasado mañana por la mañana o tarde. Imprime las horas disponibles -->
+	<category>
+		<pattern>^ <set>hoy_manyana</set> (manyana) por la * </pattern>
+		<template>
+			<think>
+				<set var="manyana_tarde"><star index="3"/></set>
+				<set var="hoy_manana_pasado"><star index="2"/></set>
+				<condition var="hoy_manana_pasado">
+					<li value="hoy">
+						<set name="dia"><srai>SELECTITEM 1 IN <srai>DATE</srai></srai></set>
+						<set name="mes_letra"><srai>SELECTITEM 2 IN <srai>DATE</srai></srai></set>
+					</li>
+					<li value="manyana">
+						<set name="dia"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>DATE TOMORROW</srai></srai></map></set>
+						<set name="mes_letra"><srai>SELECTITEM 2 IN <srai>DATE TOMORROW</srai></srai></set>
+					</li>
+					<li value="pasado">
+						<set name="dia"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>DAYAFTERTOMORROWDATE</srai></srai></map></set>
+						<set name="mes_letra"><srai>SELECTITEM 2 IN <srai>DAYAFTERTOMORROWDATE</srai></srai></set>
+					</li>
+				</condition>
+			</think>
+			<condition var="manyana_tarde">
+				<li value="manyana">
+					<srai>cita el dia <get name="dia"/> de <get name="mes_letra"/> por la manyana</srai>
+				</li>
+				<li value="tarde">
+					<srai>cita el dia <get name="dia"/> de <get name="mes_letra"/> por la tarde</srai>
+				</li>
+			</condition>
+		</template>
+	</category>
+
+	<!-- cita hoy/mañana/pasado mañana. Imprime las horas disponibles -->
+	<category>
+		<pattern>^ <set>hoy_manyana</set> (manyana) </pattern>
+		<template>
+			<think>
+				<set var="hoy_manana_pasado"><star index="2"/></set>
+				<condition var="hoy_manana_pasado">
+					<li value="hoy">
+						<set name="dia"><srai>SELECTITEM 1 IN <srai>DATE</srai></srai></set>
+						<set name="mes_letra"><srai>SELECTITEM 2 IN <srai>DATE</srai></srai></set>
+					</li>
+					<li value="manyana">
+						<set name="dia"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>DATE TOMORROW</srai></srai></map></set>
+						<set name="mes_letra"><srai>SELECTITEM 2 IN <srai>DATE TOMORROW</srai></srai></set>
+					</li>
+					<li value="pasado">
+						<set name="dia"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>DAYAFTERTOMORROWDATE</srai></srai></map></set>
+						<set name="mes_letra"><srai>SELECTITEM 2 IN <srai>DAYAFTERTOMORROWDATE</srai></srai></set>
+					</li>
+				</condition>
+			</think>
+			<srai>cita el dia <get name="dia"/> de <get name="mes_letra"/></srai>
+		</template>
+	</category>
+
+	<!-- cita un día de la semana (lunes,martes...) por la mañana o tarde. Imprime las horas disponibles -->
+	<category>
+		<pattern>^ [siguiente proximo] <set>weekday_es</set> por la * </pattern>
+		<template>
+			<think>
+				<set var="manyana_tarde"><star index="3"/></set>
+				<set name="dia"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>DATE ON <star index="2"/></srai></srai></map></set>
+				<set name="mes_letra"><srai>SELECTITEM 2 IN <srai>DATE ON <star index="2"/></srai></srai></set>
+			</think>
+			<condition var="manyana_tarde">
+				<li value="manyana">
+					<srai>cita el dia <get name="dia"/> de <get name="mes_letra"/> por la manyana</srai>
+				</li>
+				<li value="tarde">
+					<srai>cita el dia <get name="dia"/> de <get name="mes_letra"/> por la tarde</srai>
+				</li>
+			</condition>
+		</template>
+	</category>
+
+	<!-- cita un día de la semana (lunes,martes...). Imprime las horas disponibles -->
+	<category>
+		<pattern>^ [siguiente proximo] <set>weekday_es</set> </pattern>
+		<template>
+			<think>
+				<set name="dia"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>DATE ON <star index="2"/></srai></srai></map></set>
+				<set name="mes_letra"><srai>SELECTITEM 2 IN <srai>DATE ON <star index="2"/></srai></srai></set>
+			</think>
+			<srai>cita el dia <get name="dia"/> de <get name="mes_letra"/></srai>
+		</template>
+	</category>
+
+	<!-- cita una fecha (con el año a elegir) dada a una hora dada. Indica si está disponible o no -->
+	<category>
+		<pattern>^ el (dia) * de * de * a las * (horas)</pattern>
+		<template>
+			<think>
+				<set name="dia"><star index="2"/></set>
+				<set name="mes_letra"><star index="3"/></set>
+				<set name="mes"><map name="month_index_ES"><get name="mes_letra"/></map></set>
+				<set name="ano"><star index="4"/></set>
+				<set name="ano"><map name="ano_cuatro_dos_cifras"><get name="ano"/></map></set>
+				<set name="fecha"><get name="dia"/>-<get name="mes"/>-<get name="ano"/></set>
+				<set name="topic">elegir_hora_conociendo_dia</set>
+			</think>
+			<srai>A LAS <star index="5"/></srai>
+		</template>
+	</category>
+
+	<!-- cita una fecha dada a una hora dada. Indica si está disponible o no -->
+	<category>
+		<pattern>^ el (dia) * de * a las * (horas)</pattern>
+		<template>
+			<srai>CITA <star index="2"/> DE <star index="3"/> DE 2020 A LAS <star index="4"/></srai>
+		</template>
+	</category>
+
+	<!-- cita hoy, mañana o pasado a una hora dada. Indica si está disponible o no -->
+	<category>
+		<pattern>^ <set>hoy_manyana</set> (manyana) a las * </pattern>
+		<template>
+			<think>
+				<set var="hoy_manana_pasado"><star index="2"/></set>
+				<condition var="hoy_manana_pasado">
+					<li value="hoy">
+						<set name="dia"><srai>SELECTITEM 1 IN <srai>DATE</srai></srai></set>
+						<set name="mes_letra"><srai>SELECTITEM 2 IN <srai>DATE</srai></srai></set>
+						<set name="ano"><srai>SELECTITEM 3 IN <srai>DATE</srai></srai></set>
+					</li>
+					<li value="manyana">
+						<set name="dia"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>DATE TOMORROW</srai></srai></map></set>
+						<set name="mes_letra"><srai>SELECTITEM 2 IN <srai>DATE TOMORROW</srai></srai></set>
+						<set name="ano"><srai>SELECTITEM 3 IN <srai>DATE TOMORROW</srai></srai></set>
+					</li>
+					<li value="pasado">
+						<set name="dia"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>DAYAFTERTOMORROWDATE</srai></srai></map></set>
+						<set name="mes_letra"><srai>SELECTITEM 2 IN <srai>DAYAFTERTOMORROWDATE</srai></srai></set>
+						<set name="ano"><srai>SELECTITEM 3 IN <srai>DAYAFTERTOMORROWDATE</srai></srai></set>
+					</li>
+				</condition>
+				<set name="mes"><map name="month_index_ES"><get name="mes_letra"/></map></set>
+				<set name="fecha"><get name="dia"/>-<get name="mes"/>-<get name="ano"/></set>
+				<set name="topic">elegir_hora_conociendo_dia</set>
+			</think>
+			<srai>A LAS <star index="3"/></srai>
+		</template>
+	</category>
+
+	<!-- cita un dia de la semana (lunes, martes...) a una hora dada. Indica si está disponible o no -->
+	<category>
+		<pattern>^ [proximo siguiente] <set>weekday_es</set> a las *</pattern>
+		<template>
+			<think>
+				<set name="dia"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>DATE ON <star index="2"/></srai></srai></map></set>
+				<set name="mes_letra"><srai>SELECTITEM 2 IN <srai>DATE ON <star index="2"/></srai></srai></set>
+				<set name="mes"><map name="month_index_ES"><get name="mes_letra"/></map></set>
+				<set name="ano"><srai>SELECTITEM 3 IN <srai>DATE ON <star index="2"/></srai></srai></set>
+				<set name="fecha"><get name="dia"/>-<get name="mes"/>-<get name="ano"/></set>
+				<set name="topic">elegir_hora_conociendo_dia</set>
+			</think>
+			<srai>A LAS <star index="3"/></srai>
+		</template>
+	</category>
+
+</aiml>

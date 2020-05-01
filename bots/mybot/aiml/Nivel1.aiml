@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+
+    <category>
+        <pattern> ^ hola ^ </pattern>
+        <template>Buenos días, clínica Los Pinyos, que desea?</template>
+    </category>
+
+    <!-- Responde a la petición del usuario de querer reservar una cita -->
+    <category>
+        <pattern>^ [concertar reservar] una cita</pattern>
+        <template>¿Para cuando?</template>
+    </category>
+
+    <!-- Lista las horas disponibles para un dia, dada una lista de horas. Para ello, borra las horas no disponibles y mantiene las disponibles-->
+    <category>
+        <pattern>DISPONIBILIDAD DIA</pattern>
+        <template>
+        	<think>
+	            <think>
+	                <set name="topic">no_hay_disponibilidad</set>
+	                <set var="item">
+	                    <srai> ITERATE <get name="horas"/></srai>
+	                </set>
+	                <set name="i">1</set>
+	            </think> 
+	            <condition var="item">
+	                <li value="ocupado">
+	                    <think>
+	                        <set var="item">
+	                            <srai> NEXT </srai>
+	                        </set>
+	                        <set name="horas_letra">
+	                            <srai>REMOVEITEM <get name="i"/> IN <get name="horas_letra"/></srai>
+	                        </set>
+	                    </think>
+	                    <loop/>   
+	                </li>
+	                <li value="null">
+	                    <think>
+	                        <set var="item">
+	                            <srai> NEXT </srai>
+	                        </set>
+	                        <set name="i">
+	                            <srai>PLUS <get name="i"/> 1</srai>
+	                        </set>
+	                    </think>
+	                    <loop/>
+	                </li>
+	                <li></li>
+	            </condition>
+	            <set name="horas_letra">
+	                <srai>CODE <get name="horas_letra"/></srai>
+	            </set>
+	            <set name="horas_letra">
+	                <srai>DECODE <get name="horas_letra"/></srai>
+	            </set>
+	            <set name="i">1</set>
+            </think>
+            <get name="horas_letra"/>
+        </template>
+    </category>
+
+    <!-- comprueba si una hora dada está en el intervalo de horas válidas (entre las 08:00 y las 20:00) -->
+    <category>
+        <pattern>ES VALIDO A LAS *</pattern>
+        <template>
+            <think>
+                <set name="horas_letra_generales">08:00 09:00 10:00 11:00 12:00 13:00 14:00 15:00 16:00 17:00 18:00 19:00 20:00</set>
+                <set var="valido">
+                    <srai>FINDITEM <star/> IN <get name="horas_letra_generales"/></srai>
+                </set>
+            </think>
+            <get var="valido"/>
+        </template>
+    </category>
+
+    <!-- comprueba si una fecha a una determinada hora está ocupada. Si está ocupada devuelve true, si no false -->
+    <category>
+        <pattern>OCUP DIA * A LAS *</pattern>
+        <template>
+            <think>
+                <set var="valido">
+                    <srai>ES VALIDO A LAS <star index="2"/></srai>
+                </set>
+            </think>
+            <condition var="valido">
+                <li value="0">TRUE</li>
+                <li><srai>IS BUSY DAY <star/> AT <star index="2"/></srai></li>
+            </condition>
+        </template>
+    </category>
+
+    <!-- imprime las horas disponibles en un día y un mes dados. Para ello, primero comprueba si hay disponibilidad en la fecha especificada y si hay llama a disponibilidad día para que imprima las disponibles. Pregunta si se quiere alguna de las horas en concreto o le da igual al cliente. -->
+    <category>
+        <pattern>^ (cita) (para) (durante) el (dia) * de <set>month_es</set></pattern>
+        <template>
+            <think>
+                <set name="mes"><map name="month_index_ES"><star index="3"/></map></set>
+                <set name="mes_letra"><star index="3"></star></set>
+                <set name="dia"><star index="2"/></set>
+                <set name="fecha"><star index="2"/>-<get name="mes"/>-20</set>
+                <set name="horas_totales">
+                    <srai>LIST OF DAY <get name="fecha"/></srai>
+                </set>
+                <set name="horas">
+                    <srai>SUBLIST FROM 9 TO 21 OF <get name="horas_totales"/></srai>
+                </set>
+                <set var="existe">
+                    <srai>FINDITEM null IN <get name="horas"/></srai>
+                </set>
+                <set name="horas_letra">08:00 09:00 10:00 11:00 12:00 13:00 14:00 15:00 16:00 17:00 18:00 19:00 20:00</set>
+            </think>
+            <condition var="existe">
+                <li value="0">
+                    Lo siento, no hay disponibilidad, desearia otro dia
+                    <think>
+                        <set name="topic">no_hay_disponibilidad</set>
+                    </think>
+                </li>
+                <li>
+                    Tenemos disponibles las siguientes horas: <srai>DISPONIBILIDAD DIA</srai> ¿Quiere alguna en concreto?
+                    <think>
+                        <set name="topic">elegir_hora_conociendo_dia</set>
+                    </think>
+                </li>
+            </condition>
+        </template>
+    </category>
+
+    <!-- imprime las horas disponibles en un día y un mes dados, pero por la tarde. Pregunta si se quiere alguna de las horas en concreto o le da igual al cliente -->
+    <category>
+        <pattern>^ (cita) (para) (durante) el (dia) * de <set>month_es</set> [por durante] la tarde</pattern>
+        <template>
+            <think>
+                <set name="mes"><map name="month_index_ES"><star index="3"/></map></set>
+                <set name="mes_letra"><star index="3"></star></set>
+                <set name="dia"><star index="2"/></set>
+                <set name="fecha"><star index="2"/>-<get name="mes"/>-20</set>
+                <set name="horas_totales">
+                    <srai>LIST OF DAY <get name="fecha"/></srai>
+                </set>
+                <set name="horas">
+                    <srai>SUBLIST FROM 14 TO 21 OF <get name="horas_totales"/></srai>
+                </set>
+                <set var="existe">
+                    <srai>FINDITEM null IN <get name="horas"/></srai>
+                </set>
+                <set name="horas_letra">13:00 14:00 15:00 16:00 17:00 18:00 19:00 20:00</set>
+            </think>
+            <condition var="existe">
+                <li value="0">
+                    Lo siento, no hay disponibilidad, desearia otro dia
+                    <think>
+                        <set name="topic">no_hay_disponibilidad</set>
+                    </think>
+                </li>
+                <li>
+                    Tenemos disponibles las siguientes horas: <srai>DISPONIBILIDAD DIA</srai> ¿Quiere alguna en concreto?
+                    <think>
+                        <set name="topic">elegir_hora_conociendo_dia</set>
+                    </think>
+                </li>
+            </condition>
+        </template>
+    </category>
+
+    <!-- imprime las horas disponibles en un día y un mes dados, pero por la mañana. Pregunta si se quiere alguna de las horas en concreto o le da igual al cliente -->
+    <category>
+        <pattern>^ (cita) (para) (durante) el (dia) * de <set>month_es</set> [por durante] la [manana mañana manyana]</pattern>
+        <template>
+            <think>
+                <set name="mes"><map name="month_index_ES"><star index="3"/></map></set>
+                <set name="mes_letra"><star index="3"></star></set>
+                <set name="dia"><star index="2"/></set>
+                <set name="fecha"><star index="2"/>-<get name="mes"/>-20</set>
+                <set name="horas_totales">
+                    <srai>LIST OF DAY <get name="fecha"/></srai>
+                </set>
+                <set name="horas">
+                    <srai>SUBLIST FROM 9 TO 13 OF <get name="horas_totales"/></srai>
+                </set>
+                <set var="existe">
+                    <srai>FINDITEM null IN <get name="horas"/></srai>
+                </set>
+                <set name="horas_letra">08:00 09:00 10:00 11:00 12:00</set>
+            </think>
+            <condition var="existe">
+                <li value="0">
+                    Lo siento, no hay disponibilidad, desearia otro dia
+                    <think>
+                        <set name="topic">no_hay_disponibilidad</set>
+                    </think>
+                </li>
+                <li>
+                    Tenemos disponibles las siguientes horas: <srai>DISPONIBILIDAD DIA</srai> ¿Quiere alguna en concreto?
+                    <think>
+                        <set name="topic">elegir_hora_conociendo_dia</set>
+                    </think>
+                </li>
+            </condition>
+        </template>
+    </category>
+
+    <!-- En caso de que el cliente responda no, se le da las gracias y se despide -->
+    <category>
+        <pattern>^ no ^</pattern>
+        <template>En ese caso muchas gracias por haber confiado en nosotros, hasta luego.</template>
+    </category>
+
+    <!-- En el caso de que no haya disponibilidad, el cliente puede decir sí para que se busque si hay disponibilidad el día siguiente -->
+    <topic name="no_hay_disponibilidad">
+        <category>
+            <pattern>^ [si perfecto vale] ^</pattern>
+            <template>
+                <think>
+                    <set var="dia_0"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>TOMORROWDATE <get name="dia"/> <get name="mes_letra"/> 2020</srai></srai></map></set>
+                    <set var="mes"><srai>SELECTITEM 2 IN <srai>TOMORROWDATE <get name="dia"/> <get name="mes_letra"/> 2020</srai></srai></set>
+                </think>
+                Dejeme buscar, ¿le vendria bien el <get var="dia_0"/> de <get var="mes"/>? <srai>CITA EL DIA <get var="dia_0"/> DE <get var="mes"/></srai>
+            </template>
+        </category>
+    </topic>
+
+
+    <topic name="elegir_hora_conociendo_dia">
+        <!-- Una vez que se conoce el día donde se quiere la cita, el usuario elige la hora y se reserva si no está ocupada -->
+        <category>
+            <pattern>(entonces) (pues) (si,) (si) [a para] las * </pattern>
+            <template>
+                <think>
+                    <set var="valido">
+                        <srai>OCUP DIA <get name="fecha"/> A LAS <star/></srai>
+                    </set>
+                </think>
+                <condition var="valido">
+                    <li value="TRUE"> Lo sentimos, no es posible a esa hora. </li>
+                    <li><srai>MARK ocupado AT <star/> ON <get name="fecha"/></srai>
+                        Perfecto, le hemos reservado a las <star/> horas. Muchas gracias por su confianza.
+                        <think>
+                            <set name="hora"><star/></set>
+                        </think>
+                    </li>
+                </condition>
+            </template>
+        </category>
+
+        <!-- Una vez que se conoce el día, el usuario puede decir me da igual para que se le pregunte hora a hora si le viene bien -->
+        <category>
+            <pattern>Me da igual ^</pattern>
+            <template>
+                <think>
+                    <set name="topic">me_da_igual</set>
+                    <set var="hora_actual"><srai>TOP <get name="horas_letra"/></srai></set>
+                    <set var="tamano_horas_letra"><srai>COUNT <get name="horas_letra"/></srai></set>
+                </think>
+                <condition var="tamano_horas_letra">
+                    <li value="0">Lo siento, no tenemos mas horas disponibles.</li>
+                    <li>
+                        ¿Y a las <srai>TOP <get name="horas_letra"/></srai>?
+                        <think>
+                            <set name="hora"><srai>TOP <get name="horas_letra"/></srai></set>
+                            <set name="horas_letra">
+                                <srai>REMOVE 1 FIRST ELEMENTS FROM <get name="horas_letra"/></srai>
+                            </set>
+                        </think>
+                    </li>
+                </condition>
+            </template>
+        </category>
+    </topic>
+
+    <topic name="me_da_igual">
+
+        <!-- En el contexto de que le da igual la hora, el usuario dice no para que se le proponga otra hora -->
+    	<category>
+	    	<pattern>^ no ^</pattern>
+	    	<template>
+	    		<think>
+	    			<set name="topic">elegir_hora_conociendo_dia</set>
+	    		</think>
+	    		<srai>ME DA IGUAL</srai>
+	    	</template>
+    	</category>
+
+        <!-- En el contexto de que le da igual la hora, el usuario dice si para reservar esa hora -->
+        <category>
+            <pattern>^ [si perfecto vale] ^</pattern>
+            <template>
+                <think>
+                    <set name="topic">elegir_hora_conociendo_dia</set>
+                </think>
+                <srai>A LAS <get name="hora"/></srai>
+            </template>
+        </category>
+    </topic>
+
+</aiml>

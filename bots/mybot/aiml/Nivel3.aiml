@@ -1,0 +1,490 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+
+	<!-- función para calcular la fecha dos semanas después de un día dado (lunes, martes...) -->
+	<category>
+		<pattern>DATE TWO WEEKS FROM <set>weekday_es</set></pattern>
+		<template>
+			<srai>DATE IN 
+				<srai>SUCCESSOR 
+				<srai>SUCCESSOR 
+				<srai>SUCCESSOR 
+				<srai>SUCCESSOR 
+				<srai>SUCCESSOR 
+				<srai>SUCCESSOR 
+				<srai>SUCCESSOR 
+				<srai>SUCCESSOR 
+				<srai>SUCCESSOR 
+				<srai>SUCCESSOR 
+				<srai>SUCCESSOR 
+				<srai>SUCCESSOR 
+				<srai>SUCCESSOR 
+				<srai>SUCCESSOR 
+					<srai>DAYS UNTIL <star/></srai>
+				</srai>
+				</srai>
+				</srai>
+				</srai>
+				</srai>
+				</srai>
+				</srai>
+				</srai>
+				</srai>
+				</srai>
+				</srai>
+				</srai>
+				</srai>
+				</srai> DAYS</srai>
+		</template>
+	</category>
+
+	<!-- tiene tres subpartes: una para esta semana, otra para la siguiente y otra para la de después. Se encarga de cargar en variables la fecha de inicio y de fin de estas semanas para que otras funciones puedan imprimir sus días. La primera vez que se llama pregunta por la semana actual, la segunda por la siguiente, y así hasta la tercera. -->
+	<category>
+		<pattern>ELEGIR SEMANA</pattern>
+		<template>
+			<condition name="contador_semana">
+				<li value="0">
+					<think>
+						<set name="contador_semana">1</set>
+						<set name="dia_inicio_semana"><srai>SELECTITEM 1 IN <srai>DATE</srai></srai></set>
+						<set name="mes_letra_inicio_semana"><srai>SELECTITEM 2 IN <srai>DATE</srai></srai></set>
+						<set name="dia_final_semana"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>DATE ON viernes</srai></srai></map></set>
+						<set name="mes_letra_final_semana"><srai>SELECTITEM 2 IN <srai>DATE ON viernes</srai></srai></set>
+						<set name="dia_letra_inicio_semana"><srai>DAY</srai></set>
+
+						<condition name="dia_letra_inicio_semana">
+							<li value="sabado">
+								<set name="estamos_ya_en_finde">TRUE</set><set name="estamos_a_lunes">FALSE</set>
+								<set name="dia_inicio_semana"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>TOMORROWDATE <get name="dia_final_semana"/> <get name="mes_letra_final_semana"/> 2020</srai></srai></map></set>
+							</li>
+							<li value="domingo">
+								<set name="estamos_ya_en_finde">TRUE</set><set name="estamos_a_lunes">FALSE</set>
+								<set name="dia_inicio_semana"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>TOMORROWDATE <get name="dia_final_semana"/> <get name="mes_letra_final_semana"/> 2020</srai></srai></map></set>
+							</li>
+							<li value="lunes">
+								<set name="estamos_ya_en_finde">FALSE</set><set name="estamos_a_lunes">TRUE</set>
+							</li>
+							<li>
+								<set name="estamos_ya_en_finde">FALSE</set><set name="estamos_a_lunes">FALSE</set>
+							</li>
+						</condition>
+					</think>
+					¿Quiere la cita para esta semana?
+				</li>
+				<li value="1">
+					<think>
+						<set name="contador_semana">2</set>
+						<set name="dia_letra_inicio_semana">Lunes</set>
+						<condition name="estamos_ya_en_finde">
+							<li value="TRUE">
+								<set name="dia_final_semana"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>DATE ON viernes</srai></srai></map></set>
+								<set name="mes_letra_final_semana"><srai>SELECTITEM 2 IN <srai>DATE ON viernes</srai></srai></set>
+							</li>
+							<li>
+								<set name="dia_final_semana"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>DATE A WEEK FROM viernes</srai></srai></map></set>
+								<set name="mes_letra_final_semana"><srai>SELECTITEM 2 IN <srai>DATE A WEEK FROM viernes</srai></srai></set>
+							</li>
+						</condition>
+						<condition name="estamos_a_lunes">
+							<li value="TRUE">
+								<set name="dia_inicio_semana"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>DATE A WEEK FROM lunes</srai></srai></map></set>
+								<set name="mes_letra_inicio_semana"><srai>SELECTITEM 2 IN <srai>DATE A WEEK FROM lunes</srai></srai></set>
+							</li>
+							<li>
+								<set name="dia_inicio_semana"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>DATE ON lunes</srai></srai></map></set>
+								<set name="mes_letra_inicio_semana"><srai>SELECTITEM 2 IN <srai>DATE ON lunes</srai></srai></set>
+							</li>
+						</condition>
+					</think>
+					¿Y para la siguiente?
+				</li>
+				<li value="2">
+					<think>
+						<set name="contador_semana">2</set>
+						<set name="dia_letra_inicio_semana">Lunes</set>
+						<condition name="estamos_ya_en_finde">
+							<li value="TRUE">
+								<set name="dia_final_semana"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>DATE A WEEK FROM viernes</srai></srai></map></set>
+								<set name="mes_letra_final_semana"><srai>SELECTITEM 2 IN <srai>DATE A WEEK FROM viernes</srai></srai></set>
+							</li>
+							<li>
+								<set name="dia_final_semana"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>DATE TWO WEEKS FROM viernes</srai></srai></map></set>
+								<set name="mes_letra_final_semana"><srai>SELECTITEM 2 IN <srai>DATE TWO WEEKS FROM viernes</srai></srai></set>
+							</li>
+						</condition>
+						<condition name="estamos_a_lunes">
+							<li value="TRUE">
+								<set name="dia_inicio_semana"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>DATE TWO WEEKS FROM lunes</srai></srai></map></set>
+								<set name="mes_letra_inicio_semana"><srai>SELECTITEM 2 IN <srai>DATE TWO WEEKS FROM lunes</srai></srai></set>
+							</li>
+							<li>
+								<set name="dia_inicio_semana"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>DATE A WEEK FROM lunes</srai></srai></map></set>
+								<set name="mes_letra_inicio_semana"><srai>SELECTITEM 2 IN <srai>DATE A WEEK FROM lunes</srai></srai></set>
+							</li>
+						</condition>
+					</think>
+					Pues ya tendría que ser para la semana del <get name="dia_inicio_semana"/> al <get name="dia_final_semana"/>
+				</li>
+			</condition>
+		</template>
+	</category>
+
+	<!-- Comprueba si hay dias disponibles para la semana que se ha seleccionado previamente en otras funciones almacenando su dia de inicio y de fin. Si ha disponibilidad imprime los días disponibles -->
+	<category>
+		<pattern>DISP DIAS SEMANA</pattern>
+		<template>
+			<think>			
+				<set var="dia_evaluado"><get name="dia_inicio_semana"/></set>
+				<set var="mes_letra_evaluado"><get name="mes_letra_inicio_semana"/></set>
+				<set var="dia_letra_evaluado"><get name="dia_letra_inicio_semana"/></set>
+				<set var="dia_final_evaluado"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>TOMORROWDATE <get name="dia_final_semana"/> <get name="mes_letra_final_semana"/> 2020</srai></srai></map></set>
+				<set var="tamanio_lista_dias">1</set>
+				<set name="dias_disponibles">fin</set>
+				<set name="meses_dias_disponibles">fin</set>
+				<set name="dias_letra_disponibles">fin</set>
+			</think>
+
+			<condition var="dia_evaluado">
+				<li><value><get var="dia_final_evaluado"/></value></li>
+				<li>
+					<think>
+						<set var="salida_calculo_disponibilidad"><srai>cita para el dia <get var="dia_evaluado"/> de <get var="mes_letra_evaluado"/></srai></set>
+						<condition var="salida_calculo_disponibilidad">
+							<li value="Lo siento, no hay disponibilidad, desearia otro dia"></li>
+							<li>
+								<set name="dias_disponibles"><srai>ADDITEM <get var="dia_evaluado"/> IN <get name="dias_disponibles"/></srai></set>
+								<set name="meses_dias_disponibles"><srai>ADDITEM <get var="dia_evaluado"/> <get var="mes_letra_evaluado"/> IN <get name="meses_dias_disponibles"/></srai></set>
+								<set name="dias_letra_disponibles"><srai>ADDITEM <get var="dia_letra_evaluado"/> IN <get name="dias_letra_disponibles"/></srai></set>
+								<set var="tamanio_lista_dias"><srai>PLUS <get var="tamanio_lista_dias"/> 1</srai></set>
+							</li>
+						</condition>
+						<set var="fecha_evaluada"><srai>TOMORROWDATE <get var="dia_evaluado"/> <get var="mes_letra_evaluado"/> 2020</srai></set>
+						<set var="dia_evaluado"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <get var="fecha_evaluada"/></srai></map></set>
+						<set var="mes_letra_evaluado"><srai>SELECTITEM 2 IN <get var="fecha_evaluada"/></srai></set>
+						<set var="dia_letra_evaluado"><map name="tomorrow_es"><get var="dia_letra_evaluado"/></map></set>
+					</think>
+					<loop/>
+				</li>
+			</condition>
+			<think>
+				<set name="dias_disponibles"><srai>REMOVEITEM <get var="tamanio_lista_dias"/> IN <get name="dias_disponibles"/></srai></set>
+				<set var="num_dias_disponibles"><srai>COUNT <get name="dias_disponibles"/></srai></set>
+				<set name="dias_disponibles"><srai>CODE <get name="dias_disponibles"/></srai></set>
+				<set name="dias_disponibles"><srai>DECODE <get name="dias_disponibles"/></srai></set>
+			</think>
+			<condition var="num_dias_disponibles">
+				<li value="0">No tenemos dias disponibles para esta semana</li>
+				<li>
+					Tenemos citas disponibles para esa semana el <get name="dias_disponibles"/>
+				</li>
+				<think>
+					<set name="topic">no_lo_tiene_claro</set>
+				</think>
+			</condition>
+		</template>
+	</category>
+
+	<!-- Realiza lo mismo que la anterior pero sólamente para la disponibilidad por la mañana -->
+	<category>
+		<pattern>DISP DIAS SEMANA MANYANA</pattern>
+		<template>
+			<think>			
+				<set var="dia_evaluado"><get name="dia_inicio_semana"/></set>
+				<set var="mes_letra_evaluado"><get name="mes_letra_inicio_semana"/></set>
+				<set var="dia_letra_evaluado"><get name="dia_letra_inicio_semana"/></set>
+				<set var="dia_final_evaluado"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>TOMORROWDATE <get name="dia_final_semana"/> <get name="mes_letra_final_semana"/> 2020</srai></srai></map></set>
+				<set var="tamanio_lista_dias">1</set>
+				<set name="dias_disponibles">fin</set>
+				<set name="meses_dias_disponibles">fin</set>
+				<set name="dias_letra_disponibles">fin</set>
+			</think>
+
+			<condition var="dia_evaluado">
+				<li><value><get var="dia_final_evaluado"/></value></li>
+				<li>
+					<think>
+						<set var="salida_calculo_disponibilidad"><srai>cita para el dia <get var="dia_evaluado"/> de <get var="mes_letra_evaluado"/> por la manyana</srai></set>
+						<condition var="salida_calculo_disponibilidad">
+							<li value="Lo siento, no hay disponibilidad, desearia otro dia"></li>
+							<li>
+								<set name="dias_disponibles"><srai>ADDITEM <get var="dia_evaluado"/> IN <get name="dias_disponibles"/></srai></set>
+								<set name="meses_dias_disponibles"><srai>ADDITEM <get var="dia_evaluado"/> <get var="mes_letra_evaluado"/> IN <get name="meses_dias_disponibles"/></srai></set>
+								<set name="dias_letra_disponibles"><srai>ADDITEM <get var="dia_letra_evaluado"/> IN <get name="dias_letra_disponibles"/></srai></set>
+								<set var="tamanio_lista_dias"><srai>PLUS <get var="tamanio_lista_dias"/> 1</srai></set>
+							</li>
+						</condition>
+						<set var="fecha_evaluada"><srai>TOMORROWDATE <get var="dia_evaluado"/> <get var="mes_letra_evaluado"/> 2020</srai></set>
+						<set var="dia_evaluado"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <get var="fecha_evaluada"/></srai></map></set>
+						<set var="mes_letra_evaluado"><srai>SELECTITEM 2 IN <get var="fecha_evaluada"/></srai></set>
+						<set var="dia_letra_evaluado"><map name="tomorrow_es"><get var="dia_letra_evaluado"/></map></set>
+					</think>
+					<loop/>
+				</li>
+			</condition>
+			<think>
+				<set name="dias_disponibles"><srai>REMOVEITEM <get var="tamanio_lista_dias"/> IN <get name="dias_disponibles"/></srai></set>
+				<set var="num_dias_disponibles"><srai>COUNT <get name="dias_disponibles"/></srai></set>
+				<set name="dias_disponibles"><srai>CODE <get name="dias_disponibles"/></srai></set>
+				<set name="dias_disponibles"><srai>DECODE <get name="dias_disponibles"/></srai></set>
+			</think>
+			<condition var="num_dias_disponibles">
+				<li value="0">No tenemos dias disponibles para esta semana</li>
+				<li>
+					Tenemos citas disponibles para esa semana el <get name="dias_disponibles"/>
+				</li>
+				<think>
+					<set name="topic">no_lo_tiene_claro</set>
+				</think>
+			</condition>
+		</template>
+	</category>
+
+	<!-- Realiza lo mismo que la anterior pero sólamente para la disponibilidad por la tarde -->
+	<category>
+		<pattern>DISP DIAS SEMANA TARDE</pattern>
+		<template>
+			<think>			
+				<set var="dia_evaluado"><get name="dia_inicio_semana"/></set>
+				<set var="mes_letra_evaluado"><get name="mes_letra_inicio_semana"/></set>
+				<set var="dia_letra_evaluado"><get name="dia_letra_inicio_semana"/></set>
+				<set var="dia_final_evaluado"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <srai>TOMORROWDATE <get name="dia_final_semana"/> <get name="mes_letra_final_semana"/> 2020</srai></srai></map></set>
+				<set var="tamanio_lista_dias">1</set>
+				<set name="dias_disponibles">fin</set>
+				<set name="meses_dias_disponibles">fin</set>
+				<set name="dias_letra_disponibles">fin</set>
+			</think>
+
+			<condition var="dia_evaluado">
+				<li><value><get var="dia_final_evaluado"/></value></li>
+				<li>
+					<think>
+						<set var="salida_calculo_disponibilidad"><srai>cita para el dia <get var="dia_evaluado"/> de <get var="mes_letra_evaluado"/> por la tarde</srai></set>
+						<condition var="salida_calculo_disponibilidad">
+							<li value="Lo siento, no hay disponibilidad, desearia otro dia"></li>
+							<li>
+								<set name="dias_disponibles"><srai>ADDITEM <get var="dia_evaluado"/> IN <get name="dias_disponibles"/></srai></set>
+								<set name="meses_dias_disponibles"><srai>ADDITEM <get var="dia_evaluado"/> <get var="mes_letra_evaluado"/> IN <get name="meses_dias_disponibles"/></srai></set>
+								<set name="dias_letra_disponibles"><srai>ADDITEM <get var="dia_letra_evaluado"/> IN <get name="dias_letra_disponibles"/></srai></set>
+								<set var="tamanio_lista_dias"><srai>PLUS <get var="tamanio_lista_dias"/> 1</srai></set>
+							</li>
+						</condition>
+						<set var="fecha_evaluada"><srai>TOMORROWDATE <get var="dia_evaluado"/> <get var="mes_letra_evaluado"/> 2020</srai></set>
+						<set var="dia_evaluado"><map name="dia_sin_cero"><srai>SELECTITEM 1 IN <get var="fecha_evaluada"/></srai></map></set>
+						<set var="mes_letra_evaluado"><srai>SELECTITEM 2 IN <get var="fecha_evaluada"/></srai></set>
+						<set var="dia_letra_evaluado"><map name="tomorrow_es"><get var="dia_letra_evaluado"/></map></set>
+					</think>
+					<loop/>
+				</li>
+			</condition>
+			<think>
+				<set name="dias_disponibles"><srai>REMOVEITEM <get var="tamanio_lista_dias"/> IN <get name="dias_disponibles"/></srai></set>
+				<set var="num_dias_disponibles"><srai>COUNT <get name="dias_disponibles"/></srai></set>
+				<set name="dias_disponibles"><srai>CODE <get name="dias_disponibles"/></srai></set>
+				<set name="dias_disponibles"><srai>DECODE <get name="dias_disponibles"/></srai></set>
+			</think>
+			<condition var="num_dias_disponibles">
+				<li value="0">No tenemos dias disponibles para esta semana</li>
+				<li>
+					Tenemos citas disponibles para esa semana el <get name="dias_disponibles"/>
+				</li>
+				<think>
+					<set name="topic">no_lo_tiene_claro</set>
+				</think>
+			</condition>
+		</template>
+	</category>
+
+	<!-- comienza el contexto donde el usuario no tiene claro que día, y se llama a la función que pregunta por la disponibilidad en próximas semanas -->
+	<category>
+		<pattern>(Pues) (no se,) como lo teneis</pattern>
+		<template>
+			<think>
+				<set name="topic">no_lo_tiene_claro</set>
+				<set name="contador_semana">0</set>
+			</think>
+			<srai>ELEGIR SEMANA</srai>
+		</template>
+	</category>
+
+	<!-- realiza lo mismo que la anterior -->
+	<category>
+		<pattern>cuando os [viene vendria] bien (?)</pattern>
+		<template>
+			<srai>COMO LO TENEIS</srai>
+		</template>
+	</category>
+
+	<!-- realiza lo mismo que la anterior -->
+	<category>
+		<pattern>cuando teneis (hueco) (libre) (?)</pattern>
+		<template>
+			<srai>COMO LO TENEIS</srai>
+		</template>
+	</category>
+
+	<!-- imprime la disponibilidad en una semana, dado su dia de inicio y fin en el mismo mes -->
+	<category>
+		<pattern>^ la semana del * al * de <set>month_es</set></pattern>
+		<template>
+			<think>
+				<set name="dia_inicio_semana"><star index="2"/></set>
+				<set name="dia_final_semana"><star index="3"/></set>
+				<set name="mes_letra_inicio_semana"><star index="4"/></set>
+				<set name="mes_letra_final_semana"><star index="4"/></set>
+			</think>
+			<srai>DISP DIAS SEMANA</srai>
+			<think>
+				<set name="topic">no_lo_tiene_claro</set>
+			</think>
+		</template>
+	</category>
+
+	<!-- imprime la disponibilidad en una semana, dado su dia y su mes de inicio y su día y mes de fin -->
+	<category>
+		<pattern>^ la semana del * de <set>month_es</set> al * de <set>month_es</set></pattern>
+		<template>
+			<think>
+				<set name="dia_inicio_semana"><star index="2"/></set>
+				<set name="dia_final_semana"><star index="4"/></set>
+				<set name="mes_letra_inicio_semana"><star index="3"/></set>
+				<set name="mes_letra_final_semana"><star index="5"/></set>
+			</think>
+			<srai>DISP DIAS SEMANA</srai>
+			<think>
+				<set name="topic">no_lo_tiene_claro</set>
+			</think>
+		</template>
+	</category>
+
+	<topic name="no_lo_tiene_claro">
+
+		<!-- si el usuario responde que no quiere esa semana, llama a la función elegir semana para que le proponga la siguiente -->
+		<category>
+			<pattern>no ^</pattern>
+			<template>
+				<srai>ELEGIR SEMANA</srai>
+				<think>
+					<set name="topic">no_lo_tiene_claro</set>
+				</think>
+			</template>
+		</category>
+
+		<!-- si el usuario responde que si quiere esa semana, le pregunta si quiere por la mañana, por la tarde o le da igual -->
+		<category>
+			<pattern>^ si ^</pattern>
+			<template>
+				¿Por la manyana, por la tarde o le da igual?
+				<think>
+					<set name="topic">no_lo_tiene_claro</set>
+				</think>
+			</template>
+		</category>
+
+		<!-- El usuario responde a la pregunta anterior, y se imprimen los días disponibles con esa restricción -->
+		<category>
+			<pattern>^ por la *</pattern>
+			<template>
+				<think>
+					<set var="manyana_tarde"><star index="2"/></set>
+				</think>
+				<condition var="manyana_tarde">
+					<li value="manyana">
+						<srai>DISP DIAS SEMANA MANYANA</srai>
+					</li>
+					<li value="tarde">
+						<srai>DISP DIAS SEMANA TARDE</srai>
+					</li>
+				</condition>
+				<think>
+					<set name="topic">no_lo_tiene_claro</set>
+				</think>
+			</template>
+		</category>
+
+		<!-- El usuario responde a la pregunta anterior, y se imprimen los días disponibles con esa restricción -->
+		<category>
+			<pattern>me da igual</pattern>
+			<template>
+				<srai>DISP DIAS SEMANA</srai>
+				<think>
+					<set name="topic">no_lo_tiene_claro</set>
+				</think>
+			</template>
+		</category>
+
+		<!-- el usuario propone una alternativa a la semana que le han propuesto, y se comprueba si hay disponibilidad -->
+		<category>
+			<pattern>(No,) (pero) [puedo tengo prefiero] (libre) la semana del * al *</pattern>
+			<template>
+				<think>
+					<set name="dia_inicio_semana"><star/></set>
+					<set name="dia_final_semana"><star index="2"/></set>
+				</think>
+				<srai>DISP DIAS SEMANA</srai>
+				<think>
+					<set name="topic">no_lo_tiene_claro</set>
+				</think>
+			</template>
+		</category>
+
+		<!-- de los días que se le han propuesto, el usuario elige uno de forma numérica y se le indica la disponibilidad -->
+		<category>
+			<pattern>^ dia *</pattern>
+			<template>
+				<think>
+					<set var="posicion_en_lista"><srai>FINDITEM <star index="2"/> IN <get name="dias_disponibles"/></srai></set>
+					<set var="posicion_en_lista_meses"><srai>SUMA <get var="posicion_en_lista"/> <get var="posicion_en_lista"/></srai></set>
+				</think>
+				<condition var="posicion_en_lista">
+					<li value="0">Lo siento, no tenemos citas para ese dia</li>
+					<li>
+						<srai>cita para el dia <star index="2"/> de <srai>SELECTITEM <get var="posicion_en_lista_meses"/> IN <get name="meses_dias_disponibles"/></srai></srai>
+					</li>
+				</condition>
+			</template>
+		</category>
+
+		<!-- de los días que se le han propuesto, el usuario elige uno en forma de letra (lunes, martes..) y se le indica la disponibilidad -->
+		<category>
+			<pattern>^ el * de [esa esta] semana</pattern>
+			<template>
+				<think>
+					<set var="posicion_en_lista"><srai>FINDITEM <star index="2"/> IN <get name="dias_letra_disponibles"/></srai></set>
+					<set var="posicion_en_lista_meses"><srai>SUMA <get var="posicion_en_lista"/> <get var="posicion_en_lista"/></srai></set>
+				</think>
+				<condition var="posicion_en_lista">
+					<li value="0">Lo siento, no tenemos citas para ese dia</li>
+					<li>
+						<srai>cita para el dia <srai>SELECTITEM <get var="posicion_en_lista"/> IN <get name="dias_disponibles"/></srai> de <srai>SELECTITEM <get var="posicion_en_lista_meses"/> IN <get name="meses_dias_disponibles"/></srai></srai>
+					</li>
+				</condition>
+			</template>
+		</category>
+
+		<!-- de los días que se le han propuesto, el usuario elige uno en forma de letra (lunes, martes..) y se le indica la disponibilidad. Además, indica si lo quiere por la mañana o por la tarde -->
+		<category>
+			<pattern>^ el * de [esa esta] semana por la *</pattern>
+			<template>
+				<think>
+					<set var="posicion_en_lista"><srai>FINDITEM <star index="2"/> IN <get name="dias_letra_disponibles"/></srai></set>
+					<set var="posicion_en_lista_meses"><srai>SUMA <get var="posicion_en_lista"/> <get var="posicion_en_lista"/></srai></set>
+					<set var="manana_tarde"><star index="3"/></set>
+				</think>
+				<condition var="posicion_en_lista">
+					<li value="0">Lo siento, no tenemos citas para ese dia</li>
+					<li>
+						<condition var="manana_tarde">
+							<li value="manyana">
+								<srai>cita para el dia <srai>SELECTITEM <get var="posicion_en_lista"/> IN <get name="dias_disponibles"/></srai> de <srai>SELECTITEM <get var="posicion_en_lista_meses"/> IN <get name="meses_dias_disponibles"/></srai> por la manyana</srai>
+							</li>
+							<li value="tarde">
+								<srai>cita para el dia <srai>SELECTITEM <get var="posicion_en_lista"/> IN <get name="dias_disponibles"/></srai> de <srai>SELECTITEM <get var="posicion_en_lista_meses"/> IN <get name="meses_dias_disponibles"/></srai> por la tarde</srai>
+							</li>
+						</condition>
+					</li>
+				</condition>
+			</template>
+		</category>
+
+	</topic>
+</aiml>
